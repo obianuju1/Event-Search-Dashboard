@@ -1,11 +1,14 @@
-import { useState,useEffect } from 'react'
-
+import { useState,useEffect, } from 'react'
+import { Link } from "react-router-dom";
+import{Route, Routes, useParams} from "react-router-dom";
 import viteLogo from '/vite.svg'
 import './App.css'
 import Card from './Components/Card'
 import List  from './Components/List'
-import NavBar from './Components/NavBar'
 
+import Info from './Components/Info'
+import Chart from './Components/Chart'
+import allOptions from './states';
 const API_KEY = import.meta.env.VITE_APP_API_KEY;
 const URL = `https://app.ticketmaster.com/discovery/v2/events.json?size=50&apikey=0sRtJA7WghwWb0SUfpN9F3lLVll5LLoS`
 function App() {
@@ -13,34 +16,31 @@ function App() {
   const [filteredResults, setFilteredResults] = useState([]);
   const [searchInput, setSearchInput] = useState("");
   const [date, setDate] = useState(new Date());
-  const [originalEvent, setOriginalEvent]=useState([]);
+ const[isHome,setHome]=useState(false)
   const[lowPrice,setLowPrice]= useState(0);
-  
-    useEffect(() => {
-      const timer = setInterval(() => {
-        setDate(new Date());
-      }, 1000);
-  
-      return () => {
-        clearInterval(timer);
-      };
-    }, []);
-  
+const[selected,setSelected] = useState(null)
+let p
 
   useEffect(()=>{
     const allEvents = async()=>{
       const response = await fetch(URL)
       const data = await response.json();
-      setEvent(data._embedded.events);
-      setOriginalEvent(data._embedded.events);
-      console.log(data);
-      console.log(data._embedded.events[0].name)
+      p=data._embedded.events
+
+      setEvent(p);
+
+      console.log(p);
+      console.log(data._embedded.events[0].priceRanges[0].min)
       console.log(data._embedded.events)
+      console.log()
+
      
      
     }
     allEvents().catch(console.error);
   },[])
+
+
   const searchItems = searchValue =>{
     console.log(event);
 
@@ -100,8 +100,11 @@ function App() {
 
     console.log(filtteredData);
   setEvent(filtteredData)
+
     }else {
+
      setEvent(event);
+
     }
   }
   const setOrginal =()=>{
@@ -125,7 +128,6 @@ function App() {
   
     return mostFrequentEvent;
   } 
-  const mostFrequent = getMostFrequentEvent(event);
 
   function mode(events) {
     const counts = events.reduce((acc, event) => {
@@ -147,17 +149,27 @@ function App() {
   } 
   const mostCommon = mode(event);
 
-  
+  const handleHome =()=>{
+    setHome(true);
+  }
 
   return (
     <>
+
+<nav>
+      <ul>
+        <li><Link to="/">Home</Link></li>
+      </ul>
+    </nav>
+
     <h1 >Event Dashboard</h1>
-    <button onClick ={setOrginal}>Return Home</button>
+
+
    <div className="App">
    
     <div style={{display:"flex",justifyContent: 'space-between'}}>
    <Card 
-   data={50}
+   data={event.length}
    text="Number of Events"/>
    <Card data={getMostFrequentEvent(event)}
    text="Most Frequent Event"/>
@@ -180,22 +192,50 @@ function App() {
     onChange={(inputString)=>searchItems(inputString.target.value)}
     
     />
-      <input
-    type="text"
-    placeholder="Search by State "
-    onChange={(inputString)=>searchState(inputString.target.value)}
+    <select
+      onChange={(e)=>{
+
+
+        const c = event?.filter((x)=> x._embedded.venues[0].state.name.includes( e.target.value))
+        console.log
+        setSelected(c);
+      }}>
+        <option onClick={() => setSelected(null)}>Choose an option</option>
+     {allOptions ? allOptions.map((item,i)=>{
+      return(
+      <option key={i} value={item}>{item}</option>
+      )
+     })
+:null
+     }
+   </select>
+   <Chart />
+
     
-    />
-    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+
+
+    </div>
+
+
+{selected ? <List items={selected}/> : <List items={event}/>}
+   </>
+
+  )
+}
+
+export default App
+
+{/*
   <List
 label="Type"
 items={event}
 itemKey={item=>item.classifications[0].genre.name}/>
    
-    <List
+   <Link to="/Info" onClick={setlinks}> <List
     label="Name"
     items={event}
     itemKey={item=>item.name}/>
+    </Link>
     <List 
     label="Date"
     items={event}
@@ -208,12 +248,8 @@ itemKey={item=>item.classifications[0].genre.name}/>
     label="State"
     items={event}
     itemKey={item=>item._embedded.venues[0].state.name}/>
-   
-    </div>
-    </div>
-    </>
-
-  )
-}
-
-export default App
+       <List
+    label="min"
+    items={event}
+    itemKey={item => item.priceRanges && item.priceRanges.length > 0 ? item.priceRanges[0].min : 'N/A'}/>
+     */}
