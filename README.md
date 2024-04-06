@@ -1,4 +1,4 @@
-![event dashboard](https://github.com/obianuju1/Project-5/assets/83367389/e51b1557-c54c-479c-9f22-a3b2f3029a15)# Web Development Project 6 - *Event Dashboard*
+# Web Development Project 6 - *Event Dashboard*
 
 Submitted by: **Obianuju Enekebe**
 
